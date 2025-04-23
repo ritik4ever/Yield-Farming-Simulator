@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yield Farming Simulator</title>
+  <style>
+    :root {
+      --primary: #6851ff;
+      --secondary: #1fc7d4;
+      --dark: #1d1d42;
+      --light: #f5f5f5;
+      --success: #31d0aa;
+      --warning: #ffb237;
+      --danger: #ed4b9e;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--dark);
+      color: var(--light);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin: 0;
+      background: linear-gradient(to right, var(--secondary), var(--primary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .wallet-info {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .token-balance {
+      font-weight: bold;
+      color: var(--secondary);
+    }
+    
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 30px;
+    }
+    
+    .pools-container, .portfolio-container {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    
+    h2 {
+      margin-top: 0;
+      color: var(--secondary);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 10px;
+    }
+    
+    .farm-card {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .farm-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .farm-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .farm-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .farm-title .token-pair {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 5px 10px;
+      border-radius: 15px;
+    }
+    
+    .farm-apy {
+      font-weight: bold;
+      color: var(--success);
+    }
+    
+    .farm-details {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    
+    .farm-detail {
+      text-align: center;
+    }
+    
+    .farm-detail-label {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+    
+    .farm-detail-value {
+      font-weight: bold;
+    }
+    
+    .farm-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background-color: var(--secondary);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger);
+    }
+    
+    .btn-block {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    .stake-form {
+      margin-top: 15px;
+      display: none;
+    }
+    
+    .stake-form input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      margin-bottom: 10px;
+    }
+    
+    .portfolio-item {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .portfolio-tokens {
+      font-weight: bold;
+    }
+    
+    .portfolio-earnings {
+      color: var(--success);
+      font-weight: bold;
+    }
+    
+    .portfolio-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .tutorial-container {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+    }
+    
+    .tutorial-step {
+      margin-bottom: 15px;
+    }
+    
+    .tutorial-step h3 {
+      color: var(--secondary);
+      margin-bottom: 5px;
+    }
+    
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: var(--dark);
+      border-left: 4px solid var(--success);
+      padding: 15px 20px;
+      border-radius: 5px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      transform: translateX(120%);
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.error {
+      border-left-color: var(--danger);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .wallet-info {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Yield Farming Simulator</h1>
+      <div class="wallet-info">
+        <div>Your balance: <span class="token-balance" id="user-balance">1000</span> SIM</div>
+        <button class="btn btn-secondary" id="faucet-button">Get 100 SIM</button>
+      </div>
+    </header>
+    
+    <div class="main-content">
+      <div class="pools-container">
+        <h2>Available Farms</h2>
+        
+        <div class="farm-card">
+          <div class="farm-header">
+            <div class="farm-title">
+              <span class="token-pair">SIM-ETH</span> Liquidity Pool
+            </div>
+            <div class="farm-apy">APY: 12%</div>
+          </div>
+          <div class="farm-details">
+            <div class="farm-detail">
+              <div class="farm-detail-label">TVL</div>
+              <div class="farm-detail-value">$1.2M</div>
+            </div>
+            <div class="farm-detail">
+              <div class="farm-detail-label">Reward Token</div>
+              <div class="farm-detail-value">CAKE</div>
+            </div>
+            <div class="farm-detail">
+              <div class="farm-detail-label">Your Stake</div>
+              <div class="farm-detail-value" id="sim-eth-stake">0</div>
+            </div>
+          </div>
+          <div class="farm-actions">
+            <button class="btn" onclick="toggleStakeForm('sim-eth')">Stake</button>
+          </div>
+          <div class="stake-form" id="sim-eth-form">
+            <input type="number" placeholder="Amount to stake" id="sim-eth-amount">
+            <button class="btn btn-block" onclick="stakeTokens('sim-eth')">Confirm Stake</button>
+          </div>
+        </div>
+        
+        <div class="farm-card">
+          <div class="farm-header">
+            <div class="farm-title">
+              <span class="token-pair">SIM-USDC</span> Liquidity Pool
+            </div>
+            <div class="farm-apy">APY: 8%</div>
+          </div>
+          <div class="farm-details">
+            <div class="farm-detail">
+              <div class="farm-detail-label">TVL</div>
+              <div class="farm-detail-value">$3.6M</div>
+            </div>
+            <div class="farm-detail">
+              <div class="farm-detail-label">Reward Token</div>
+              <div class="farm-detail-value">SUSHI</div>
+            </div>
+            <div class="farm-detail">
+              <div class="farm-detail-label">Your Stake</div>
+              <div class="farm-detail-value" id="sim-usdc-stake">0</div>
+            </div>
+          </div>
+          <div class="farm-actions">
+            <button class="btn" onclick="toggleStakeForm('sim-usdc')">Stake</button>
+          </div>
+          <div class="stake-form" id="sim-usdc-form">
+            <input type="number" placeholder="Amount to stake" id="sim-usdc-amount">
+            <button class="btn btn-block" onclick="stakeTokens('sim-usdc')">Confirm Stake</button>
+          </div>
+        </div>
+        
+        <div class="farm-card">
+          <div class="farm-header">
+            <div class="farm-title">
+              <span class="token-pair">SIM-BTC</span> Liquidity Pool
+            </div>
+            <div class="farm-apy">APY: 15%</div>
+          </div>
+          <div class="farm-details">
+            <div class="farm-detail">
+              <div class="farm-detail-label">TVL</div>
+              <div class="farm-detail-value">$890K</div>
+            </div>
+            <div class="farm-detail">
+              <div class="farm-detail-label">Reward Token</div>
+              <div class="farm-detail-value">UNI</div>
+            </div>
+            <div class="farm-detail">
+              <div class="farm-detail-label">Your Stake</div>
+              <div class="farm-detail-value" id="sim-btc-stake">0</div>
+            </div>
+          </div>
+          <div class="farm-actions">
+            <button class="btn" onclick="toggleStakeForm('sim-btc')">Stake</button>
+          </div>
+          <div class="stake-form" id="sim-btc-form">
+            <input type="number" placeholder="Amount to stake" id="sim-btc-amount">
+            <button class="btn btn-block" onclick="stakeTokens('sim-btc')">Confirm Stake</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="portfolio-container">
+        <h2>Your Farming Portfolio</h2>
+        <div id="portfolio-items">
+          <!-- Portfolio items will be added here dynamically -->
+          <div class="empty-portfolio" id="empty-portfolio">
+            You haven't staked any tokens yet. Start farming by staking tokens in the available farms.
+          </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <button class="btn btn-secondary btn-block" id="harvest-all">Harvest All Rewards</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tutorial-container">
+      <h2>How Yield Farming Works</h2>
+      
+      <div class="tutorial-step">
+        <h3>1. Understanding Liquidity Pools</h3>
+        <p>Liquidity pools are token pairs that users can provide to decentralized exchanges. By providing liquidity, you help facilitate trading and earn a portion of the trading fees.</p>
+      </div>
+      
+      <div class="tutorial-step">
+        <h3>2. Yield Farming Mechanics</h3>
+        <p>When you stake your tokens in a farm, you're essentially locking them in a smart contract. In return, you earn rewards in the form of additional tokens. The Annual Percentage Yield (APY) indicates your expected return over a year.</p>
+      </div>
+      
+      <div class="tutorial-step">
+        <h3>3. Impermanent Loss</h3>
+        <p>While not simulated in this simple game, real yield farming comes with risks such as impermanent loss - when the value of your deposited assets changes compared to holding them.</p>
+      </div>
+      
+      <div class="tutorial-step">
+        <h3>4. Compound Interest</h3>
+        <p>In this simulator, rewards accumulate over time based on your staked amount and the APY. In real DeFi, reinvesting your rewards can lead to compound growth.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="notification" id="notification">Notification message</div>
+  
+  <script>
+    // State management
+    const state = {
+      userBalance: 1000,
+      pools: {
+        'sim-eth': {
+          name: 'SIM-ETH',
+          apy: 0.12,
+          rewardToken: 'CAKE',
+          userStake: 0,
+          rewards: 0,
+          lastUpdate: Date.now()
+        },
+        'sim-usdc': {
+          name: 'SIM-USDC',
+          apy: 0.08,
+          rewardToken: 'SUSHI',
+          userStake: 0,
+          rewards: 0,
+          lastUpdate: Date.now()
+        },
+        'sim-btc': {
+          name: 'SIM-BTC',
+          apy: 0.15,
+          rewardToken: 'UNI',
+          userStake: 0,
+          rewards: 0,
+          lastUpdate: Date.now()
+        }
+      }
+    };
+    
+    // UI Elements
+    const userBalanceEl = document.getElementById('user-balance');
+    const faucetButton = document.getElementById('faucet-button');
+    const harvestAllButton = document.getElementById('harvest-all');
+    const portfolioItems = document.getElementById('portfolio-items');
+    const emptyPortfolio = document.getElementById('empty-portfolio');
+    const notification = document.getElementById('notification');
+    
+    // Initialize
+    updateUI();
+    
+    // Start the reward calculation loop
+    setInterval(calculateRewards, 5000);
+    
+    // Event Listeners
+    faucetButton.addEventListener('click', () => {
+      state.userBalance += 100;
+      updateUI();
+      showNotification('You received 100 SIM tokens!');
+    });
+    
+    harvestAllButton.addEventListener('click', harvestAllRewards);
+    
+    // Functions
+    function toggleStakeForm(poolId) {
+      const form = document.getElementById(`${poolId}-form`);
+      form.style.display = form.style.display === 'block' ? 'none' : 'block';
+    }
+    
+    function stakeTokens(poolId) {
+      const amountInput = document.getElementById(`${poolId}-amount`);
+      const amount = parseInt(amountInput.value);
+      
+      if (isNaN(amount) || amount <= 0) {
+        showNotification('Please enter a valid amount', true);
+        return;
+      }
+      
+      if (amount > state.userBalance) {
+        showNotification('Insufficient balance', true);
+        return;
+      }
+      
+      // Update state
+      state.userBalance -= amount;
+      state.pools[poolId].userStake += amount;
+      state.pools[poolId].lastUpdate = Date.now();
+      
+      // Update UI
+      updateUI();
+      toggleStakeForm(poolId);
+      amountInput.value = '';
+      
+      showNotification(`Successfully staked ${amount} SIM in ${state.pools[poolId].name} pool`);
+    }
+    
+    function calculateRewards() {
+      const now = Date.now();
+      
+      for (const poolId in state.pools) {
+        const pool = state.pools[poolId];
+        if (pool.userStake > 0) {
+          // Calculate time passed in seconds since last update
+          const timePassedInSeconds = (now - pool.lastUpdate) / 1000;
+          
+          // Convert APY to per-second rate
+          // APY to per-second formula: (1 + APY)^(1/31536000) - 1
+          // Simplified for small time intervals: APY / 31536000
+          const secondRate = pool.apy / 31536000; // 31536000 seconds in a year
+          
+          // Calculate rewards
+          const newRewards = pool.userStake * secondRate * timePassedInSeconds;
+          pool.rewards += newRewards;
+          pool.lastUpdate = now;
+        }
+      }
+      
+      updateUI();
+    }
+    
+    function harvestAllRewards() {
+      let totalHarvested = 0;
+      let rewardsText = '';
+      
+      for (const poolId in state.pools) {
+        const pool = state.pools[poolId];
+        if (pool.rewards > 0) {
+          const roundedRewards = Math.round(pool.rewards * 100) / 100;
+          totalHarvested += roundedRewards;
+          rewardsText += `${roundedRewards} ${pool.rewardToken}, `;
+          pool.rewards = 0;
+        }
+      }
+      
+      if (totalHarvested > 0) {
+        rewardsText = rewardsText.slice(0, -2); // Remove trailing comma and space
+        showNotification(`Harvested rewards: ${rewardsText}`);
+        updateUI();
+      } else {
+        showNotification('No rewards to harvest yet', true);
+      }
+    }
+    
+    function updateUI() {
+      // Update user balance
+      userBalanceEl.textContent = Math.round(state.userBalance * 100) / 100;
+      
+      // Update pool stakes
+      for (const poolId in state.pools) {
+        const stakeEl = document.getElementById(`${poolId}-stake`);
+        stakeEl.textContent = state.pools[poolId].userStake;
+      }
+      
+      // Update portfolio
+      updatePortfolio();
+    }
+    
+    function updatePortfolio() {
+      let hasStakes = false;
+      
+      // Clear previous items except the empty message
+      const items = portfolioItems.querySelectorAll('.portfolio-item');
+      items.forEach(item => item.remove());
+      
+      for (const poolId in state.pools) {
+        const pool = state.pools[poolId];
+        
+        if (pool.userStake > 0) {
+          hasStakes = true;
+          
+          const itemEl = document.createElement('div');
+          itemEl.className = 'portfolio-item';
+          
+          const roundedRewards = Math.round(pool.rewards * 100) / 100;
+          
+          itemEl.innerHTML = `
+            <div>
+              <div class="farm-title">${pool.name}</div>
+              <div class="portfolio-tokens">Staked: ${pool.userStake} SIM</div>
+            </div>
+            <div>
+              <div class="portfolio-earnings">Earned: ${roundedRewards} ${pool.rewardToken}</div>
+              <div class="portfolio-actions">
+                <button class="btn btn-secondary" onclick="harvestRewards('${poolId}')">Harvest</button>
+                <button class="btn btn-danger" onclick="unstake('${poolId}')">Unstake</button>
+              </div>
+            </div>
+          `;
+          
+          portfolioItems.appendChild(itemEl);
+        }
+      }
+      
+      // Show/hide empty portfolio message
+      emptyPortfolio.style.display = hasStakes ? 'none' : 'block';
+    }
+    
+    function harvestRewards(poolId) {
+      const pool = state.pools[poolId];
+      if (pool.rewards > 0) {
+        const roundedRewards = Math.round(pool.rewards * 100) / 100;
+        showNotification(`Harvested ${roundedRewards} ${pool.rewardToken} from ${pool.name} pool`);
+        pool.rewards = 0;
+        updateUI();
+      } else {
+        showNotification('No rewards to harvest yet', true);
+      }
+    }
+    
+    function unstake(poolId) {
+      const pool = state.pools[poolId];
+      if (pool.userStake > 0) {
+        // First harvest any pending rewards
+        if (pool.rewards > 0) {
+          harvestRewards(poolId);
+        }
+        
+        // Return staked tokens to user balance
+        state.userBalance += pool.userStake;
+        
+        // Show notification
+        showNotification(`Unstaked ${pool.userStake} SIM from ${pool.name} pool`);
+        
+        // Reset pool data
+        pool.userStake = 0;
+        pool.rewards = 0;
+        
+        updateUI();
+      }
+    }
+    
+    function showNotification(message, isError = false) {
+      notification.textContent = message;
+      notification.className = isError ? 'notification error' : 'notification';
+      
+      // Show notification
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      // Hide after 3 seconds
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
